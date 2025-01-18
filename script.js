@@ -43,68 +43,89 @@ d3.csv('boston_311_2023_by_reason.csv').then(data => {
         .style('font-size', '16px')
         .style('color', '#666');
 
-    // Create scales
-    const yScale = d3.scaleBand()
-        .domain(top10Data.map(d => d.reason))
-        .range([0, height])
-        .padding(0.2);
-
-    const xScale = d3.scaleLinear()
-        .domain([0, d3.max(top10Data, d => d.Count)])
-        .range([0, width]);
-
-    // Create bars
-    svg.selectAll('rect')
-        .data(top10Data)
-        .enter()
-        .append('rect')
-        .attr('x', 0)
-        .attr('y', d => yScale(d.reason))
-        .attr('width', d => xScale(d.Count))
-        .attr('height', yScale.bandwidth())
-        .attr('fill', '#4CAF50') // Custom color for bars
-        .on('mouseover', function (event, d) {
-            d3.select(this).attr('fill', '#FF5722'); // Change color on hover
-        })
-        .on('mouseout', function () {
-            d3.select(this).attr('fill', '#4CAF50'); // Revert color on mouseout
-        });
-
-    // Add axes
-    svg.append('g')
-        .call(d3.axisLeft(yScale).tickSize(0).tickPadding(10))
-        .selectAll('text')
-        .style('font-family', 'Roboto, sans-serif')
-        .style('font-size', '14px')
-        .style('color', '#333');
-
-    svg.append('g')
-        .attr('transform', `translate(0, ${height})`)
-        .call(d3.axisBottom(xScale).ticks(5).tickSize(0).tickPadding(10))
-        .selectAll('text')
-        .style('font-family', 'Roboto, sans-serif')
-        .style('font-size', '14px')
-        .style('color', '#333');
-
-    // Add axis labels
-    svg.append('text')
-        .attr('x', width / 2)
-        .attr('y', height + margin.bottom - 40)
-        .attr('text-anchor', 'middle')
+    // Add toggle button
+    d3.select('#chart_311')
+        .append('button')
+        .attr('id', 'toggleButton')
+        .text('Show All Reasons')
+        .style('display', 'block')
+        .style('margin', '20px auto')
+        .style('padding', '10px 20px')
         .style('font-family', 'Roboto, sans-serif')
         .style('font-size', '16px')
-        .style('color', '#333')
-        .text('Number of Calls');
+        .style('cursor', 'pointer');
 
-    svg.append('text')
-        .attr('x', -height / 2)
-        .attr('y', -margin.left + 20)
-        .attr('text-anchor', 'middle')
-        .attr('transform', 'rotate(-90)')
-        .style('font-family', 'Roboto, sans-serif')
-        .style('font-size', '16px')
-        .style('color', '#333')
-        .text('Reason for Call');
+    // Function to draw the chart
+    function drawChart(data) {
+        // Clear existing chart
+        svg.selectAll('*').remove();
+
+        // Create scales
+        const yScale = d3.scaleBand()
+            .domain(data.map(d => d.reason))
+            .range([0, height])
+            .padding(0.2);
+
+        const xScale = d3.scaleLinear()
+            .domain([0, d3.max(data, d => d.Count)])
+            .range([0, width]);
+
+        // Create bars
+        svg.selectAll('rect')
+            .data(data)
+            .enter()
+            .append('rect')
+            .attr('x', 0)
+            .attr('y', d => yScale(d.reason))
+            .attr('width', d => xScale(d.Count))
+            .attr('height', yScale.bandwidth())
+            .attr('fill', '#4CAF50') // Custom color for bars
+            .on('mouseover', function (event, d) {
+                d3.select(this).attr('fill', '#FF5722'); // Change color on hover
+            })
+            .on('mouseout', function () {
+                d3.select(this).attr('fill', '#4CAF50'); // Revert color on mouseout
+            });
+
+        // Add axes
+        svg.append('g')
+            .call(d3.axisLeft(yScale).tickSize(0).tickPadding(10))
+            .selectAll('text')
+            .style('font-family', 'Roboto, sans-serif')
+            .style('font-size', '14px')
+            .style('color', '#333');
+
+        svg.append('g')
+            .attr('transform', `translate(0, ${height})`)
+            .call(d3.axisBottom(xScale).ticks(5).tickSize(0).tickPadding(10))
+            .selectAll('text')
+            .style('font-family', 'Roboto, sans-serif')
+            .style('font-size', '14px')
+            .style('color', '#333');
+
+        // Add axis labels
+        svg.append('text')
+            .attr('x', width / 2)
+            .attr('y', height + margin.bottom - 40)
+            .attr('text-anchor', 'middle')
+            .style('font-family', 'Roboto, sans-serif')
+            .style('font-size', '16px')
+            .style('color', '#333')
+            .text('Number of Calls');
+
+        svg.append('text')
+            .attr('x', -height / 2)
+            .attr('y', -margin.left + 20)
+            .attr('text-anchor', 'middle')
+            .attr('transform', 'rotate(-90)')
+            .style('font-family', 'Roboto, sans-serif')
+            .style('font-size', '16px')
+            .style('color', '#333')
+            .text('Reason for Call');
+    }
+
+    // Initial draw with top 10 data
+    drawChart(top10Data);
 
     // Add footnotes
     d3.select('#chart_311')
@@ -123,4 +144,17 @@ d3.csv('boston_311_2023_by_reason.csv').then(data => {
         .style('font-family', 'Roboto, sans-serif')
         .style('font-size', '12px')
         .style('color', '#999');
+
+    // Toggle button functionality
+    let showingAll = false;
+    d3.select('#toggleButton').on('click', function() {
+        showingAll = !showingAll;
+        if (showingAll) {
+            drawChart(data);
+            d3.select(this).text('Show Top 10 Reasons');
+        } else {
+            drawChart(top10Data);
+            d3.select(this).text('Show All Reasons');
+        }
+    });
 });
