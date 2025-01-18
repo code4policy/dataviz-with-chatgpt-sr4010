@@ -40,24 +40,24 @@ d3.csv('boston_311_2023_by_reason.csv').then(data => {
         .style('font-family', 'Roboto, sans-serif');
 
     // Create scales
-    const xScale = d3.scaleBand()
+    const yScale = d3.scaleBand()
         .domain(top10Data.map(d => d.reason))
-        .range([0, width])
+        .range([0, height])
         .padding(0.2);
 
-    const yScale = d3.scaleLinear()
+    const xScale = d3.scaleLinear()
         .domain([0, d3.max(top10Data, d => d.Count)])
-        .range([height, 0]);
+        .range([0, width]);
 
     // Create bars
     svg.selectAll('rect')
         .data(top10Data)
         .enter()
         .append('rect')
-        .attr('x', d => xScale(d.reason))
-        .attr('y', d => yScale(d.Count))
-        .attr('width', xScale.bandwidth())
-        .attr('height', d => height - yScale(d.Count))
+        .attr('x', 0)
+        .attr('y', d => yScale(d.reason))
+        .attr('width', d => xScale(d.Count))
+        .attr('height', yScale.bandwidth())
         .attr('fill', 'blue')
         .on('mouseover', function (event, d) {
             d3.select(this).attr('fill', 'orange'); // Change color on hover
@@ -68,23 +68,23 @@ d3.csv('boston_311_2023_by_reason.csv').then(data => {
 
     // Add axes
     svg.append('g')
-        .attr('transform', `translate(0, ${height})`)
-        .call(d3.axisBottom(xScale));
+        .call(d3.axisLeft(yScale));
 
     svg.append('g')
-        .call(d3.axisLeft(yScale).ticks(5)); // Adjust the number of ticks for better readability
+        .attr('transform', `translate(0, ${height})`)
+        .call(d3.axisBottom(xScale).ticks(5)); // Adjust the number of ticks for better readability
 
     // Add axis labels
     svg.append('text')
         .attr('x', width / 2)
         .attr('y', height + margin.bottom - 10)
         .attr('text-anchor', 'middle')
-        .text('Reason for Call');
+        .text('Number of Calls');
 
     svg.append('text')
         .attr('x', -height / 2)
         .attr('y', -margin.left + 20)
         .attr('text-anchor', 'middle')
         .attr('transform', 'rotate(-90)')
-        .text('Number of Calls');
+        .text('Reason for Call');
 });
