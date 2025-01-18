@@ -14,7 +14,7 @@ d3.csv('boston_311_2023_by_reason.csv').then(data => {
     // Set up SVG container
     const svgWidth = 800;
     const svgHeight = 500;
-    const margin = { top: 40, right: 40, bottom: 80, left: 200 };
+    const margin = { top: 80, right: 40, bottom: 80, left: 200 };
     const width = svgWidth - margin.left - margin.right;
     const height = svgHeight - margin.top - margin.bottom;
 
@@ -25,25 +25,39 @@ d3.csv('boston_311_2023_by_reason.csv').then(data => {
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
+    // Add headline
+    d3.select('#chart_311')
+        .insert('h1', ':first-child')
+        .text('Top 10 Reasons for 311 Calls in Boston (2023)')
+        .style('text-align', 'center')
+        .style('font-family', 'Roboto, sans-serif');
+
+    // Add subheadline
+    d3.select('#chart_311')
+        .insert('p', ':nth-child(2)')
+        .text('A breakdown of the most common issues reported by residents')
+        .style('text-align', 'center')
+        .style('font-family', 'Roboto, sans-serif');
+
     // Create scales
-    const yScale = d3.scaleBand()
+    const xScale = d3.scaleBand()
         .domain(top10Data.map(d => d.reason))
-        .range([0, height])
+        .range([0, width])
         .padding(0.2);
 
-    const xScale = d3.scaleLinear()
+    const yScale = d3.scaleLinear()
         .domain([0, d3.max(top10Data, d => d.Count)])
-        .range([0, width]);
+        .range([height, 0]);
 
     // Create bars
     svg.selectAll('rect')
         .data(top10Data)
         .enter()
         .append('rect')
-        .attr('x', 0)
-        .attr('y', d => yScale(d.reason))
-        .attr('width', d => xScale(d.Count))
-        .attr('height', yScale.bandwidth())
+        .attr('x', d => xScale(d.reason))
+        .attr('y', d => yScale(d.Count))
+        .attr('width', xScale.bandwidth())
+        .attr('height', d => height - yScale(d.Count))
         .attr('fill', 'blue')
         .on('mouseover', function (event, d) {
             d3.select(this).attr('fill', 'orange'); // Change color on hover
@@ -54,23 +68,23 @@ d3.csv('boston_311_2023_by_reason.csv').then(data => {
 
     // Add axes
     svg.append('g')
-        .call(d3.axisLeft(yScale));
+        .attr('transform', `translate(0, ${height})`)
+        .call(d3.axisBottom(xScale));
 
     svg.append('g')
-        .attr('transform', `translate(0, ${height})`)
-        .call(d3.axisBottom(xScale).ticks(5)); // Adjust the number of ticks for better readability
+        .call(d3.axisLeft(yScale).ticks(5)); // Adjust the number of ticks for better readability
 
     // Add axis labels
     svg.append('text')
         .attr('x', width / 2)
         .attr('y', height + margin.bottom - 10)
         .attr('text-anchor', 'middle')
-        .text('Number of Calls');
+        .text('Reason for Call');
 
     svg.append('text')
         .attr('x', -height / 2)
         .attr('y', -margin.left + 20)
         .attr('text-anchor', 'middle')
         .attr('transform', 'rotate(-90)')
-        .text('Reason for Call');
+        .text('Number of Calls');
 });
