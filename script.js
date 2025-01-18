@@ -11,7 +11,7 @@ d3.csv('boston_311_2023_by_reason.csv').then(data => {
     // Take only the top 10 types
     const top10Data = data.slice(0, 10);
 
-    // Set up SVG container
+    // Set up SVG container okay
     const svgWidth = 800;
     const svgHeight = 500;
     const margin = { top: 80, right: 40, bottom: 80, left: 200 };
